@@ -1,7 +1,7 @@
 <template>
-  <div class="main">
+  <div ref="wrap">
     <!-- 日程 -->
-    <div class="my-schedule bra">
+    <div class="my-schedule">
       <div class="my-schedule-title flex">
         <text class="f28 fw5 c0">日程</text>
         <text class="f24 c153 fw4 pl20 pt10 pb10" @click="myScheduleMoreEvent">全部</text>
@@ -16,7 +16,7 @@
       </div>
     </div>
     <div v-if='!isShowLoad'>
-      <div class="my-schedule-content" v-if='scheduleItem.length!=0 && isShowSchedule'>
+      <div class="my-schedule-content" v-if='scheduleItem.length!=0'>
         <text class="f24 fw4 c153">共{{scheduleItem.length}}个日程</text>
         <div :class="[index == (scheduleItem.length-1)? 'border-no-bottom' : 'border-bottom']"
           v-for="(item,index) in scheduleItem" :key='index' @click='scheduleEvent(item.id,item.type)'>
@@ -29,10 +29,10 @@
           </div>
         </div>
       </div>
-      <div class="my-schedule-no-content flex-ac flex-jc" v-if='scheduleItem.length==0 && isShowSchedule'>
+      <div class="my-schedule-no-content flex-ac flex-jc" v-if='scheduleItem.length==0'>
         <div class="flex-dr">
           <bui-image src="/image/sleep.png" width="42px" height="39px"></bui-image>
-          <text class="f26 c51 fw4 pl15">暂无日程</text>
+          <text class="f26 c51 fw4 pl15 center-height">{{isError?'暂无日程':'加载失败'}}</text>
         </div>
       </div>
     </div>
@@ -47,15 +47,16 @@
 <script>
   const link = weex.requireModule("LinkModule");
   const animation = weex.requireModule('animation')
+  const dom = weex.requireModule('dom');
   export default {
     data() {
       return {
         myScheduleArr: [],
         scheduleItem: [],
         getCurrentDay: '',
-        isShowSchedule: false,
         isShowLoad: true,
-        timeOut: null
+        timeOut: null,
+        isError: true
       }
     },
     methods: {
@@ -63,7 +64,6 @@
         link.launchLinkService(['[OpenApp] \n appCode=crm \n appUrl=LinkOl\\Modular\\other\\scheduleHome.html \n id=' +
           id + '\n type=' + type + ''
         ], (res) => {}, (err) => {
-          this.$alert(err)
         });
       },
       animationLoad() {
@@ -88,7 +88,6 @@
       },
       // 日期
       myScheduleEvent(item, index) {
-        clearTimeout(this.timeOut);
         if (this.getCurrentDay == item)
           return
         this.isShowLoad = true
@@ -100,6 +99,7 @@
         let end = searchTime + ' 23:59:59'
         let endDate = new Date(end)
         this.$nextTick(() => {
+          clearTimeout(this.timeOut);
           this.animationLoad()
         })
         this.getSchedule(startDate.getTime(), endDate.getTime())
@@ -164,6 +164,10 @@
               promiseOne, promiseTwo
             ]).then(() => {
               let scheduleArr = []
+              clearTimeout(this.timeOut);
+              this.isError = true
+              this.isShowLoad = false
+              this.broadcastWidgetHeight()
               if (promiseOne._v.success == true && promiseTwo._v.success == true) {
                 if (JSON.stringify(promiseOne._v.data) != '[]') {
                   scheduleArr = promiseOne._v.data
@@ -171,30 +175,35 @@
                 if (JSON.stringify(promiseTwo._v.data) != '[]') {
                   scheduleArr = scheduleArr.concat(promiseTwo._v.data)
                 }
-                let scheduleObj = {}
                 let scheduleArrItem = []
                 for (let index = 0; index < scheduleArr.length; index++) {
+                  let scheduleObj = {}
                   let time = scheduleArr[index].startTimeDisplayValue.split(' ')[1] +
                     '-' + scheduleArr[index].endTimeDisplayValue.split(' ')[1]
                   scheduleObj['time'] = time
                   scheduleObj['name'] = scheduleArr[index].name
                   scheduleObj['id'] = scheduleArr[index].id
                   scheduleObj['type'] = scheduleArr[index].status
-                  scheduleArrItem.push(JSON.parse(JSON.stringify(scheduleObj)))
+                  scheduleArrItem.push(scheduleObj)
                 }
-                clearTimeout(this.timeOut);
-                this.isShowLoad = false
-                this.isShowSchedule = true
                 this.scheduleItem = []
                 this.scheduleItem = scheduleArrItem
               }
             }).catch(() => {
-              this.$toast('网络有误~')
+              this.error()
             })
+          }, (err) => {
+            this.error()
           });
         }, (err) => {
-          this.$toast(err)
+          this.error()
         })
+      },
+      error() {
+        clearTimeout(this.timeOut);
+        this.isShowLoad = false
+        this.isError = false
+        this.broadcastWidgetHeight()
       },
       getNowFormatDate(type) {
         let date = new Date(),
@@ -266,6 +275,19 @@
           newData.push(obj)
         }
         this.myScheduleArr = newData
+      },
+      broadcastWidgetHeight() {
+        let _params = this.$getPageParams();
+        setTimeout(() => {
+          dom.getComponentRect(this.$refs.wrap, (ret) => {
+            var channel = new BroadcastChannel('WidgetsMessage')
+            channel.postMessage({
+              widgetHeight: ret.size.height,
+              id: _params.id
+            });
+            channel.close();
+          });
+        }, 100)
       }
     },
     mounted() {
@@ -287,11 +309,6 @@
 
 <style lang="css" src="../css/common.css"></style>
 <style>
-  .main {
-    flex: 1;
-    background-color: #F8F8F8;
-  }
-
   .my-schedule {
     background-color: #fff;
   }
@@ -302,7 +319,6 @@
   }
 
   .my-schedule-data {
-    /* margin: 13px 62px 32px 62px; */
     padding: 0 40px 24px 40px;
   }
 
@@ -312,7 +328,7 @@
     border-radius: 24px;
     text-align: center;
     line-height: 48px;
-    margin-top: 36px;
+    margin-top: 28px;
     color: #fff;
     background-color: #4DA4FE;
   }
@@ -340,7 +356,6 @@
   .content-item {
     height: 118px;
     margin: 22px 0 4px 0;
-    /* border-bottom: 1px solid #E8E8E8; */
   }
 
   .border-bottom {
@@ -357,5 +372,9 @@
     background: rgba(77, 164, 254, 1);
     border-radius: 5px;
     margin-right: 24px;
+  }
+
+  .center-height {
+    line-height: 40px;
   }
 </style>
