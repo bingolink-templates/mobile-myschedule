@@ -10,8 +10,10 @@
         <div class="flex-ac" v-for="(item, index) in myScheduleArr" :key='index'
           @click='myScheduleEvent(item.data,index)'>
           <text class="c153 f28 fw4 tc">{{item.day}}</text>
-          <text class="f24 c153 fw4 now-schedule" v-if='getCurrentDay==item.data'>{{item.data}}</text>
-          <text class="f24 c153 fw4 not-schedule" v-if='getCurrentDay!=item.data'>{{item.data}}</text>
+          <text class="f24 c153 fw4 now-schedule"
+            v-if='getCurrentDay==(item.data.length ==1?"0"+item.data:item.data)'>{{item.data}}</text>
+          <text class="f24 c153 fw4 not-schedule"
+            v-if='getCurrentDay!=(item.data.length ==1?"0"+item.data:item.data)'>{{item.data}}</text>
         </div>
       </div>
     </div>
@@ -48,6 +50,7 @@
   const link = weex.requireModule("LinkModule");
   const animation = weex.requireModule('animation')
   const dom = weex.requireModule('dom');
+  const linkapi = require('linkapi');
   export default {
     data() {
       return {
@@ -63,8 +66,7 @@
       scheduleEvent(id, type) {
         link.launchLinkService(['[OpenApp] \n appCode=crm \n appUrl=LinkOl\\Modular\\other\\scheduleHome.html \n id=' +
           id + '\n type=' + type + ''
-        ], (res) => {}, (err) => {
-        });
+        ], (res) => {}, (err) => {});
       },
       animationLoad() {
         let loadElement = this.$refs.transform
@@ -104,100 +106,71 @@
         })
         this.getSchedule(startDate.getTime(), endDate.getTime())
       },
-      getToken(success, error) {
-        return new Promise((resolve, reject) => {
-          link.getToken([], res => {
-            resolve(res);
-            success && success(res);
-          }, err => {
-            reject(err);
-            error && error(err);
-          });
-        });
-      },
-      getScheduleData(url, data, token, success, error) {
-        return new Promise((resolve, reject) => {
-          this.$get({
-            url: url,
-            headers: {
-              'Authorization': 'Bearer ' + token
-            },
-            data: data
-          }).then((res) => {
-            resolve(res);
-            success && success(res);
-          }).catch((reason) => {
-            reject(reason);
-            error && error(reason);
-          })
-        });
-      },
       getSchedule(start, end) {
-        this.getToken((token) => {
-          link.getServerConfigs([], (params) => {
-            let sqls = [];
-            if (end) sqls.push('UNIX_TIMESTAMP(startTime) <= ' + end / 1000);
-            if (start) sqls.push(' UNIX_TIMESTAMP(endTime)>= ' + start / 1000);
-            let objData = {
-              entityName: 'ExtendSchedule',
-              searchType: 0,
-              pageSize: '',
-              page: '',
-              keyWord: '',
-              orderBy: 'startTime asc',
-              parentId: '',
-              scope: 'all',
-              whereFilter: sqls.join(' and '),
-              endTime: '',
-              startTime: ''
-            }
-            let reqObjData = JSON.parse(JSON.stringify(objData))
-            reqObjData['searchType'] = 4
-            // 内部数据
-            let promiseOne = this.getScheduleData(params.uamUri + '/webCommon/getList', objData, token
-              .accessToken, (res) => {}, (err) => {})
-            // 外部数据
-            let promiseTwo = this.getScheduleData(params.uamUri + '/webCommon/getList', reqObjData, token
-              .accessToken,
-              (res) => {}, (err) => {})
-            Promise.all([
-              promiseOne, promiseTwo
-            ]).then(() => {
-              let scheduleArr = []
-              clearTimeout(this.timeOut);
-              this.isError = true
-              this.isShowLoad = false
-              this.broadcastWidgetHeight()
-              if (promiseOne._v.success == true && promiseTwo._v.success == true) {
-                if (JSON.stringify(promiseOne._v.data) != '[]') {
-                  scheduleArr = promiseOne._v.data
-                }
-                if (JSON.stringify(promiseTwo._v.data) != '[]') {
-                  scheduleArr = scheduleArr.concat(promiseTwo._v.data)
-                }
-                let scheduleArrItem = []
-                for (let index = 0; index < scheduleArr.length; index++) {
-                  let scheduleObj = {}
-                  let time = scheduleArr[index].startTimeDisplayValue.split(' ')[1] +
-                    '-' + scheduleArr[index].endTimeDisplayValue.split(' ')[1]
-                  scheduleObj['time'] = time
-                  scheduleObj['name'] = scheduleArr[index].name
-                  scheduleObj['id'] = scheduleArr[index].id
-                  scheduleObj['type'] = scheduleArr[index].status
-                  scheduleArrItem.push(scheduleObj)
-                }
-                this.scheduleItem = []
-                this.scheduleItem = scheduleArrItem
+        link.getServerConfigs([], (params) => {
+          let sqls = [];
+          if (end) sqls.push('UNIX_TIMESTAMP(startTime) <= ' + end / 1000);
+          if (start) sqls.push(' UNIX_TIMESTAMP(endTime)>= ' + start / 1000);
+          let objData = {
+            entityName: 'ExtendSchedule',
+            searchType: 0,
+            pageSize: '',
+            page: '',
+            keyWord: '',
+            orderBy: 'startTime asc',
+            parentId: '',
+            scope: 'all',
+            whereFilter: sqls.join(' and '),
+            endTime: '',
+            startTime: ''
+          }
+          let reqObjData = JSON.parse(JSON.stringify(objData))
+          reqObjData['searchType'] = 4
+          // 内部数据
+          let promiseOne = linkapi.get({
+            url: params.uamUri + '/webCommon/getList',
+            data: objData
+          })
+          // 外部数据
+          let promiseTwo = linkapi.get({
+            url: params.uamUri + '/webCommon/getList',
+            data: reqObjData
+          })
+          Promise.all([
+            promiseOne, promiseTwo
+          ]).then(() => {
+            let scheduleArr = []
+            clearTimeout(this.timeOut);
+            this.isError = true
+            this.isShowLoad = false
+            this.broadcastWidgetHeight()
+            if (promiseOne._v.success == true && promiseTwo._v.success == true) {
+              if (JSON.stringify(promiseOne._v.data) != '[]') {
+                scheduleArr = promiseOne._v.data
               }
-            }).catch(() => {
-              this.error()
-            })
-          }, (err) => {
+              if (JSON.stringify(promiseTwo._v.data) != '[]') {
+                scheduleArr = scheduleArr.concat(promiseTwo._v.data)
+              }
+              let scheduleArrItem = []
+              for (let index = 0; index < scheduleArr.length; index++) {
+                let scheduleObj = {}
+                let time = scheduleArr[index].startTimeDisplayValue.split(' ')[1] +
+                  '-' + scheduleArr[index].endTimeDisplayValue.split(' ')[1]
+                scheduleObj['time'] = time
+                scheduleObj['name'] = scheduleArr[index].name
+                scheduleObj['id'] = scheduleArr[index].id
+                scheduleObj['type'] = scheduleArr[index].status
+                scheduleArrItem.push(scheduleObj)
+              }
+              this.scheduleItem = []
+              this.scheduleItem = scheduleArrItem
+            }
+          }).catch(() => {
             this.error()
-          });
+          })
         }, (err) => {
           this.error()
-        })
+        });
       },
       error() {
         clearTimeout(this.timeOut);
