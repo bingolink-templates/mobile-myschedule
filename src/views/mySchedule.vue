@@ -3,8 +3,8 @@
     <!-- 日程 -->
     <div class="my-schedule">
       <div class="my-schedule-title flex">
-        <text class="f28 fw5 c0">日程</text>
-        <text class="f24 c153 fw4 pl20 pt10 pb10" @click="myScheduleMoreEvent">全部</text>
+        <text class="f28 fw5 c0">{{i18n.Schedule}}</text>
+        <text class="f24 c153 fw4 pl20 pt10 pb10" @click="myScheduleMoreEvent">{{i18n.All}}</text>
       </div>
       <div class="my-schedule-data flex">
         <div class="flex-ac" v-for="(item, index) in myScheduleArr" :key='index'
@@ -34,7 +34,7 @@
       <div class="my-schedule-no-content flex-ac flex-jc" v-if='scheduleItem.length==0'>
         <div class="flex-dr">
           <bui-image src="/image/sleep.png" width="42px" height="39px"></bui-image>
-          <text class="f26 c51 fw4 pl15 center-height">{{isError?'暂无日程':'加载失败'}}</text>
+          <text class="f26 c51 fw4 pl15 center-height">{{isError?i18n.NoneData:i18n.ErrorLoadData}}</text>
         </div>
       </div>
     </div>
@@ -59,7 +59,9 @@
         getCurrentDay: '',
         isShowLoad: true,
         timeOut: null,
-        isError: true
+        isError: true,
+        channel: new BroadcastChannel('WidgetsMessage'),
+        i18n: ''
       }
     },
     methods: {
@@ -126,51 +128,65 @@
           }
           let reqObjData = JSON.parse(JSON.stringify(objData))
           reqObjData['searchType'] = 4
+
+          let index = 0;
+          let promiseOne;
+          let promiseTwo;
           // 内部数据
-          let promiseOne = linkapi.get({
-            url: params.uamUri + '/webCommon/getList',
+          linkapi.get({
+            url: params.specialUri + '/webCommon/getList',
             data: objData
+          }).then((res) => {
+            if (res.success == true) {
+              index++
+              promiseOne = res
+              if (index == 2) {
+                this.getdata(promiseOne, promiseTwo)
+              }
+            }
           })
           // 外部数据
-          let promiseTwo = linkapi.get({
-            url: params.uamUri + '/webCommon/getList',
+          linkapi.get({
+            url: params.specialUri + '/webCommon/getList',
             data: reqObjData
-          })
-          Promise.all([
-            promiseOne, promiseTwo
-          ]).then(() => {
-            let scheduleArr = []
-            clearTimeout(this.timeOut);
-            this.isError = true
-            this.isShowLoad = false
-            this.broadcastWidgetHeight()
-            if (promiseOne._v.success == true && promiseTwo._v.success == true) {
-              if (JSON.stringify(promiseOne._v.data) != '[]') {
-                scheduleArr = promiseOne._v.data
+          }).then((res) => {
+            if (res.success == true) {
+              index++
+              promiseTwo = res
+              if (index == 2) {
+                this.getdata(promiseOne, promiseTwo)
               }
-              if (JSON.stringify(promiseTwo._v.data) != '[]') {
-                scheduleArr = scheduleArr.concat(promiseTwo._v.data)
-              }
-              let scheduleArrItem = []
-              for (let index = 0; index < scheduleArr.length; index++) {
-                let scheduleObj = {}
-                let time = scheduleArr[index].startTimeDisplayValue.split(' ')[1] +
-                  '-' + scheduleArr[index].endTimeDisplayValue.split(' ')[1]
-                scheduleObj['time'] = time
-                scheduleObj['name'] = scheduleArr[index].name
-                scheduleObj['id'] = scheduleArr[index].id
-                scheduleObj['type'] = scheduleArr[index].status
-                scheduleArrItem.push(scheduleObj)
-              }
-              this.scheduleItem = []
-              this.scheduleItem = scheduleArrItem
             }
-          }).catch(() => {
-            this.error()
           })
         }, (err) => {
           this.error()
         });
+      },
+      getdata(promiseOne, promiseTwo) {
+        let scheduleArr = []
+        clearTimeout(this.timeOut);
+        this.isError = true
+        this.isShowLoad = false
+        this.broadcastWidgetHeight()
+        if (JSON.stringify(promiseOne.data) != '[]') {
+          scheduleArr = promiseOne.data
+        }
+        if (JSON.stringify(promiseTwo.data) != '[]') {
+          scheduleArr = scheduleArr.concat(promiseTwo.data)
+        }
+        let scheduleArrItem = []
+        for (let index = 0; index < scheduleArr.length; index++) {
+          let scheduleObj = {}
+          let time = scheduleArr[index].startTimeDisplayValue.split(' ')[1] +
+            '-' + scheduleArr[index].endTimeDisplayValue.split(' ')[1]
+          scheduleObj['time'] = time
+          scheduleObj['name'] = scheduleArr[index].name
+          scheduleObj['id'] = scheduleArr[index].id
+          scheduleObj['type'] = scheduleArr[index].status
+          scheduleArrItem.push(scheduleObj)
+        }
+        this.scheduleItem = []
+        this.scheduleItem = scheduleArrItem
       },
       error() {
         clearTimeout(this.timeOut);
@@ -253,17 +269,25 @@
         let _params = this.$getPageParams();
         setTimeout(() => {
           dom.getComponentRect(this.$refs.wrap, (ret) => {
-            var channel = new BroadcastChannel('WidgetsMessage')
-            channel.postMessage({
+            this.channel.postMessage({
               widgetHeight: ret.size.height,
               id: _params.id
             });
-            channel.close();
           });
         }, 100)
       }
     },
+    created() {
+      linkapi.getLanguage((res) => {
+        this.i18n = this.$window[res]
+      })
+    },
     mounted() {
+      this.channel.onmessage = (event) => {
+        if (event.data.action === 'RefreshData') {
+          this.getData()
+        }
+      }
       this.getData()
       let searchTime = this.getNowFormatDate(2);
       let start = searchTime + ' 00:00:00'
