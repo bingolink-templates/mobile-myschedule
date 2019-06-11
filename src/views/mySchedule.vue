@@ -58,7 +58,6 @@
         scheduleItem: [],
         getCurrentDay: '',
         isShowLoad: true,
-        timeOut: null,
         isError: true,
         channel: new BroadcastChannel('WidgetsMessage'),
         i18n: ''
@@ -95,17 +94,13 @@
         if (this.getCurrentDay == item)
           return
         this.isShowLoad = true
-        this.getCurrentDay = item
+        this.getCurrentDay = item.length == 1 ? "0" + item : item
         let search = this.getNowFormatDate(1);
         let searchTime = this.dealTime(index, search, 2)
         let start = searchTime + ' 00:00:00'
         let startDate = new Date(start)
         let end = searchTime + ' 23:59:59'
         let endDate = new Date(end)
-        this.$nextTick(() => {
-          clearTimeout(this.timeOut);
-          this.animationLoad()
-        })
         this.getSchedule(startDate.getTime(), endDate.getTime())
       },
       getSchedule(start, end) {
@@ -164,7 +159,6 @@
       },
       getdata(promiseOne, promiseTwo) {
         let scheduleArr = []
-        clearTimeout(this.timeOut);
         this.isError = true
         this.isShowLoad = false
         this.broadcastWidgetHeight()
@@ -189,7 +183,6 @@
         this.scheduleItem = scheduleArrItem
       },
       error() {
-        clearTimeout(this.timeOut);
         this.isShowLoad = false
         this.isError = false
         this.broadcastWidgetHeight()
@@ -275,6 +268,15 @@
             });
           });
         }, 100)
+      },
+      RefreshData() {
+        this.getData()
+        let searchTime = this.getNowFormatDate(2);
+        let start = searchTime + ' 00:00:00'
+        let startDate = new Date(start)
+        let end = searchTime + ' 23:59:59'
+        let endDate = new Date(end)
+        this.getSchedule(startDate.getTime(), endDate.getTime())
       }
     },
     created() {
@@ -285,21 +287,10 @@
     mounted() {
       this.channel.onmessage = (event) => {
         if (event.data.action === 'RefreshData') {
-          this.getData()
+          this.RefreshData()
         }
       }
-      this.getData()
-      let searchTime = this.getNowFormatDate(2);
-      let start = searchTime + ' 00:00:00'
-      let startDate = new Date(start)
-      let end = searchTime + ' 23:59:59'
-      let endDate = new Date(end)
-      this.getSchedule(startDate.getTime(), endDate.getTime())
-      this.animationLoad()
-    },
-    beforeDestroy() {
-      clearInterval(this.timeOut);
-      this.timeOut = null;
+      this.RefreshData()
     }
   }
 </script>
