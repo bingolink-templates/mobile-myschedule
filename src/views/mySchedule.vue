@@ -387,7 +387,7 @@
 
     .my-schedule-content {
         margin-top: 10px;
-        padding: 25px 26px 17px 26px;
+        padding: 25px 26px 10px 26px;
         background-color: #fff;
     }
 
@@ -398,8 +398,8 @@
     }
 
     .content-item {
-        height: 118px;
-        margin: 22px 0 4px 0;
+        height: 90px;
+        margin: 10px 0 4px 0;
     }
 
     .border-bottom {
