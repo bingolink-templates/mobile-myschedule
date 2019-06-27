@@ -1,5 +1,5 @@
 <template>
-    <div ref="wrap">
+    <div ref="wrap" class="main">
         <!-- 日程 -->
         <div class="my-schedule">
             <div class="my-schedule-title flex">
@@ -22,7 +22,7 @@
                     <div class="content-item flex-jc">
                         <div class="flex-dr flex-ac">
                             <div class="item-dot"></div>
-                            <text class="f28 fw4 c0">{{item.name}}</text>
+                            <text class="f28 fw4 c0 lines1">{{item.name}}</text>
                         </div>
                         <text class="f24 c153 fw4 pl34 mt4">{{item.time}}</text>
                     </div>
@@ -61,6 +61,21 @@
                 i18n: '',
                 DATE_TIME: 1000 * 60 * 60 * 24
             }
+        },
+        mounted() {
+            this.channel.onmessage = event => {
+                if (event.data.action === 'RefreshData') {
+                    linkapi.getLanguage(res => {
+                        this.i18n = this.$window[res]
+                        this.RefreshData()
+                    })
+                }
+            }
+
+            linkapi.getLanguage(res => {
+                this.i18n = this.$window[res]
+                this.RefreshData()
+            })
         },
         methods: {
             scheduleEvent(id, type) {
@@ -307,15 +322,17 @@
                 this.myScheduleArr = newData
             },
             broadcastWidgetHeight() {
-                let _params = this.$getPageParams()
-                setTimeout(() => {
-                    dom.getComponentRect(this.$refs.wrap, ret => {
-                        this.channel.postMessage({
-                            widgetHeight: ret.size.height,
-                            id: _params.id
-                        })
-                    })
-                }, 100)
+                let _params = this.$getPageParams();
+                for (let index = 1; index < 22; index = index + 10) {
+                    setTimeout(() => {
+                        dom.getComponentRect(this.$refs.wrap, (ret) => {
+                            this.channel.postMessage({
+                                widgetHeight: ret.size.height,
+                                id: _params.id
+                            });
+                        });
+                    }, 100 * index)
+                }
             },
             RefreshData() {
                 this.getData()
@@ -326,27 +343,16 @@
                 let endDate = new Date(end)
                 this.getSchedule(startDate.getTime(), endDate.getTime(), searchTime)
             }
-        },
-        mounted() {
-            this.channel.onmessage = event => {
-                if (event.data.action === 'RefreshData') {
-                    linkapi.getLanguage(res => {
-                        this.i18n = this.$window[res]
-                        this.RefreshData()
-                    })
-                }
-            }
-
-            linkapi.getLanguage(res => {
-                this.i18n = this.$window[res]
-                this.RefreshData()
-            })
         }
     }
 </script>
 
 <style lang="css" src="../css/common.css"></style>
 <style>
+    .main {
+        flex: 1;
+        background-color: #666;
+    }
     .my-schedule {
         background-color: #fff;
     }

@@ -1,7 +1,7 @@
 module.exports = {
     "zh-cn": {
         "Schedule": "日程",
-        "All": "全部",
+        "All": "更多",
         "NoneData": "暂无日程",
         "ErrorLoadData": "加载失败",
         "Date_ALLDay":"全天",
@@ -18,7 +18,7 @@ module.exports = {
     },
     "zh-hk": {
         "Schedule": "日程",
-        "All": "全部",
+        "All": "更多",
         "NoneData": "暫無日程",
         "ErrorLoadData": "加載失敗",
         "Date_ALLDay":"全天",
@@ -35,7 +35,7 @@ module.exports = {
     },
     "en": {
         "Schedule": "Schedule",
-        "All": "All",
+        "All": "More",
         "Date_ALLDay":"All day",
         "Date_Begin":"start with",
         "Date_End":"end with",
