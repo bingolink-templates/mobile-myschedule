@@ -1,5 +1,5 @@
 <template>
-    <div ref="wrap" class="main">
+    <div ref="wrap">
         <!-- 日程 -->
         <div class="my-schedule">
             <div class="my-schedule-title flex">
@@ -22,9 +22,9 @@
                     <div class="content-item flex-jc">
                         <div class="flex-dr flex-ac">
                             <div class="item-dot"></div>
-                            <text class="f28 fw4 c0 lines1">{{item.name}}</text>
+                            <text class="f28 fw4 c0 lines1 flex1">{{item.name}}</text>
                         </div>
-                        <text class="f24 c153 fw4 pl34 mt4">{{item.time}}</text>
+                        <text class="f24 c153 fw4 pl34 mt4 flex1">{{item.time}}</text>
                     </div>
                 </div>
             </div>
@@ -62,7 +62,8 @@
                 DATE_TIME: 1000 * 60 * 60 * 24
             }
         },
-        mounted() {
+        created() {
+            this.$fixViewport();
             this.channel.onmessage = event => {
                 if (event.data.action === 'RefreshData') {
                     linkapi.getLanguage(res => {
@@ -79,7 +80,7 @@
         },
         methods: {
             scheduleEvent(id, type) {
-                link.launchLinkService(['[OpenApp] \n appCode=crm \n appUrl=LinkOl\\Modular\\other\\scheduleHome.html \n id=' + id + '\n type=' + type + ''],
+                link.launchLinkService(['[OpenApp] \n appCode=crm \n appUrl=LinkOl/Modular/other/scheduleHome.html \n id=' + id + '\n type=' + type + ''],
                     res => { }, err => { }
                 )
             },
@@ -139,6 +140,8 @@
                                 this.getdata(promiseOne, promiseTwo, searchTime)
                             }
                         }
+                    }, () => {
+                        this.error()
                     })
                     // 外部数据
                     linkapi.get({
@@ -152,6 +155,8 @@
                                 this.getdata(promiseOne, promiseTwo, searchTime)
                             }
                         }
+                    }, () => {
+                        this.error()
                     })
                 }, err => {
                     this.error()
@@ -347,10 +352,6 @@
 
 <style lang="css" src="../css/common.css"></style>
 <style>
-    .main {
-        flex: 1;
-        background-color: #666;
-    }
     .my-schedule {
         background-color: #fff;
     }

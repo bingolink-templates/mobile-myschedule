@@ -24,7 +24,7 @@ module.exports = {
         "Date_ALLDay":"全天",
         "Date_Begin":"開始于",
  	    "Date_End":"結束于",
-        'Mon': '壹',
+        'Mon': '一',
         'Tues': '二',
         'Wed': '三',
         'Thurs': '四',
