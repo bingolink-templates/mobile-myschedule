@@ -1,6 +1,6 @@
 module.exports = {
     "zh-cn": {
-        "Schedule": "日程",
+        "Schedule": "我的日程",
         "All": "更多",
         "NoneData": "暂无日程",
         "ErrorLoadData": "加载失败",
@@ -17,7 +17,7 @@ module.exports = {
         'AllSchedule':'共%s个日程'
     },
     "zh-hk": {
-        "Schedule": "日程",
+        "Schedule": "我的日程",
         "All": "更多",
         "NoneData": "暫無日程",
         "ErrorLoadData": "加載失敗",
@@ -34,7 +34,7 @@ module.exports = {
         'AllSchedule':'共%s個日程'
     },
     "en": {
-        "Schedule": "Schedule",
+        "Schedule": "My Schedule",
         "All": "More",
         "Date_ALLDay":"All day",
         "Date_Begin":"start with",
