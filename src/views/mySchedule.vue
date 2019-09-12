@@ -29,15 +29,15 @@
                 </div>
             </div>
             <div class="my-schedule-no-content flex-ac flex-jc" v-if="scheduleItem.length==0">
-                <div class="flex-dr">
-                    <bui-image src="/image/sleep.png" width="42px" height="39px"></bui-image>
+                <div class="flex-dr flex-ac">
+                    <bui-image src="/image/sleep.png" width="21wx" height="20wx"></bui-image>
                     <text class="f26 c51 fw4 pl15 center-height">{{isError?i18n.NoneData:i18n.ErrorLoadData}}</text>
                 </div>
             </div>
         </div>
         <div class="my-schedule-no-content flex-ac flex-jc" v-if="isShowLoad">
             <div ref="transform">
-                <bui-image src="/image/refresh.gif" width="60" height="60"></bui-image>
+                <bui-image src="/image/refresh.gif" width="30wx" height="30wx"></bui-image>
             </div>
         </div>
     </div>
@@ -357,48 +357,48 @@
     }
 
     .my-schedule-title {
-        height: 40px;
-        margin: 18px 23px 44px 25px;
+        height: 20wx;
+        margin: 9wx 11wx 22wx 22wx;
     }
 
     .my-schedule-data {
-        padding: 0 40px 24px 40px;
+        padding: 0 20wx 22wx 20wx;
     }
 
     .now-schedule {
-        width: 48px;
-        height: 48px;
-        border-radius: 24px;
+        width: 24wx;
+        height: 24wx;
+        border-radius: 12wx;
         text-align: center;
-        line-height: 48px;
-        margin-top: 28px;
+        line-height: 24wx;
+        margin-top: 14wx;
         color: #fff;
         background-color: #4da4fe;
     }
 
     .not-schedule {
-        width: 48px;
-        height: 48px;
-        margin-top: 28px;
+        width: 24wx;
+        height: 24wx;
+        margin-top: 14wx;
         text-align: center;
-        line-height: 48px;
+        line-height: 24wx;
     }
 
     .my-schedule-content {
-        margin-top: 10px;
-        padding: 25px 26px 10px 26px;
+        margin-top: 5wx;
+        padding: 12wx 13wx 5wx 13wx;
         background-color: #fff;
     }
 
     .my-schedule-no-content {
-        height: 166px;
+        height: 83wx;
         margin-top: 1px;
         background-color: #fff;
     }
 
     .content-item {
-        height: 90px;
-        margin: 10px 0 4px 0;
+        height: 45wx;
+        margin: 5wx 0 2wx 0;
     }
 
     .border-bottom {
@@ -410,14 +410,14 @@
     }
 
     .item-dot {
-        width: 10px;
-        height: 10px;
+        width: 5wx;
+        height: 5wx;
         background: rgba(77, 164, 254, 1);
-        border-radius: 5px;
+        border-radius: 2.5wx;
         margin-right: 24px;
     }
 
     .center-height {
-        line-height: 40px;
+        line-height: 20wx;
     }
 </style>

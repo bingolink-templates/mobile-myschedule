@@ -23,7 +23,7 @@
     "weex-vue-render": "^1.0.17"
   },
   "devDependencies": {
-    "linkapi": "^0.3.31",
+    "linkapi": "^0.3.32",
     "archiver": "^2.1.0",
     "autoprefixer": "^8.0.0",
     "babel-core": "^6.26.0",
