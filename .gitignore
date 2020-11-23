@@ -3,8 +3,6 @@
 /config.js
 /.idea
 *.sass-cache
-/src/css/*.css
-*.css.map
 *log
 **/.DS_Store
 /publish/*

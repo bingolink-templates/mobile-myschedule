@@ -1,37 +1,34 @@
 <template>
-    <div ref="wrap">
+    <div ref="wrap" class="main">
         <!-- 日程 -->
         <div class="my-schedule">
             <div class="my-schedule-title flex">
-                <text class="f28 fw5 c0">{{i18n.Schedule}}</text>
-                <text class="f24 c153 fw4 pl20 pt10 pb10" @click="myScheduleMoreEvent">{{i18n.All}}</text>
+                <text class="f30 fw5 c06">{{i18n.Schedule}}</text>
+                <text class="f24 c153 fw4" @click="myScheduleMoreEvent">{{i18n.All}}</text>
             </div>
             <div class="my-schedule-data flex">
                 <div class="flex-ac" v-for="(item, index) in myScheduleArr" :key="index" @click="myScheduleEvent(item.data,index)">
-                    <text class="c153 f28 fw4 tc">{{item.day}}</text>
-                    <text class="f24 c153 fw4 now-schedule" v-if="getCurrentDay==(item.data.length ==1?'0'+item.data:item.data)">{{item.data}}</text>
-                    <text class="f24 c153 fw4 not-schedule" v-if="getCurrentDay!=(item.data.length ==1?'0'+item.data:item.data)">{{item.data}}</text>
+                    <text class="c04 f28 fw4 tc">{{item.day}}</text>
+                    <text class="f32 c0 fw4 now-schedule" v-if="getCurrentDay==(item.data.length ==1?'0'+item.data:item.data)">{{item.data}}</text>
+                    <text class="f32 c0 fw4 not-schedule" v-if="getCurrentDay!=(item.data.length ==1?'0'+item.data:item.data)">{{item.data}}</text>
                 </div>
             </div>
         </div>
         <div v-if="!isShowLoad">
             <div class="my-schedule-content" v-if="scheduleItem.length!=0">
-                <text class="f24 fw4 c153">{{AllSchedule}}</text>
+                <text class="f26 fw4 c04">{{AllSchedule}}</text>
                 <div :class="[index == (scheduleItem.length-1)? 'border-no-bottom' : 'border-bottom']" v-for="(item,index) in scheduleItem" :key="index" @click="scheduleEvent(item.id,item.type)">
                     <div class="content-item flex-jc">
                         <div class="flex-dr flex-ac">
                             <div class="item-dot"></div>
-                            <text class="f28 fw4 c0 lines1 flex1">{{item.name}}</text>
+                            <text class="f32 fw4 c0 lines1 flex1">{{item.name}}</text>
                         </div>
                         <text class="f24 c153 fw4 pl34 mt4 flex1">{{item.time}}</text>
                     </div>
                 </div>
             </div>
             <div class="my-schedule-no-content flex-ac flex-jc" v-if="scheduleItem.length==0">
-                <div class="flex-dr flex-ac">
-                    <bui-image src="/image/sleep.png" width="21wx" height="20wx"></bui-image>
-                    <text class="f26 c51 fw4 pl15 center-height">{{isError?i18n.NoneData:i18n.ErrorLoadData}}</text>
-                </div>
+                <text class="f32 c0 fw4 pl15 center-height">{{isError?i18n.NoneData:i18n.ErrorLoadData}}</text>
             </div>
         </div>
         <div class="my-schedule-no-content flex-ac flex-jc" v-if="isShowLoad">
@@ -254,7 +251,7 @@ export default {
                 strDate = '0' + strDate
             }
             if (type == 1) {
-                currentdate = year + month + strDate
+                currentdate = year + '' + month + '' + strDate
             } else {
                 currentdate = year + '/' + month + '/' + strDate
             }
@@ -324,6 +321,7 @@ export default {
                 newData.push(obj)
             }
             this.myScheduleArr = newData
+            this.broadcastWidgetHeight()
         },
         getComponentRect(_params) {
             dom.getComponentRect(this.$refs.wrap, (ret) => {
@@ -358,47 +356,52 @@ export default {
 
 <style lang="css" src="../css/common.css"></style>
 <style>
+.main {
+    background-color: #fff;
+}
+
 .my-schedule {
     background-color: #fff;
 }
 
 .my-schedule-title {
-    height: 20wx;
-    margin: 9wx 11wx 22wx 22wx;
+    height: 47wx;
+    padding: 0 18wx;
 }
 
 .my-schedule-data {
-    padding: 0 20wx 22wx 20wx;
+    padding: 0 14wx 9wx 14wx;
+    border-bottom: 1px solid #efefef;
 }
 
 .now-schedule {
-    width: 24wx;
-    height: 24wx;
-    border-radius: 12wx;
+    width: 30wx;
+    height: 30wx;
+    border-radius: 15wx;
     text-align: center;
-    line-height: 24wx;
-    margin-top: 14wx;
+    line-height: 30wx;
+    margin-top: 10wx;
     color: #fff;
-    background-color: #4da4fe;
+    background: #148ed6;
 }
 
 .not-schedule {
-    width: 24wx;
-    height: 24wx;
-    margin-top: 14wx;
+    width: 30wx;
+    height: 30wx;
+    margin-top: 10wx;
     text-align: center;
-    line-height: 24wx;
+    line-height: 30wx;
 }
 
 .my-schedule-content {
-    margin-top: 5wx;
+    /* margin-top: 5wx; */
+    height: 300wx;
     padding: 12wx 13wx 5wx 13wx;
     background-color: #fff;
 }
 
 .my-schedule-no-content {
-    height: 83wx;
-    margin-top: 1px;
+    height: 300wx;
     background-color: #fff;
 }
 

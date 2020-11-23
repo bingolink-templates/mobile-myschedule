@@ -1,5 +1,5 @@
 <template>
-    <div style="flex:1">
+    <div style="flex:1;">
         <mySchedule></mySchedule>
     </div>
 </template>
