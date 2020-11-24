@@ -1,10 +1,10 @@
 <template>
     <div ref="wrap" class="main">
         <!-- 日程 -->
-        <div class="my-schedule">
+        <div>
             <div class="my-schedule-title flex">
                 <text class="f30 fw5 c06">{{i18n.Schedule}}</text>
-                <text class="f24 c153 fw4" @click="myScheduleMoreEvent">{{i18n.All}}</text>
+                <bui-image src="/image/more.png" width="18wx" height="18wx" @click="myScheduleMoreEvent"></bui-image>
             </div>
             <div class="my-schedule-data flex">
                 <div class="flex-ac" v-for="(item, index) in myScheduleArr" :key="index" @click="myScheduleEvent(item.data,index)">
@@ -16,8 +16,8 @@
         </div>
         <div v-if="!isShowLoad">
             <div class="my-schedule-content" v-if="scheduleItem.length!=0">
-                <text class="f26 fw4 c04">{{AllSchedule}}</text>
-                <div :class="[index == (scheduleItem.length-1)? 'border-no-bottom' : 'border-bottom']" v-for="(item,index) in scheduleItem" :key="index" @click="scheduleEvent(item.id,item.type)">
+                <!-- <text class="f26 fw4 c04">{{AllSchedule}}</text> -->
+                <div v-for="(item,index) in scheduleItem" :key="index" @click="scheduleEvent(item.id,item.type)">
                     <div class="content-item flex-jc">
                         <div class="flex-dr flex-ac">
                             <div class="item-dot"></div>
@@ -55,7 +55,8 @@ export default {
             isError: true,
             channel: new BroadcastChannel('WidgetsMessage'),
             i18n: '',
-            DATE_TIME: 1000 * 60 * 60 * 24
+            DATE_TIME: 1000 * 60 * 60 * 24,
+            isLoadOnce: true
         }
     },
     created() {
@@ -87,6 +88,8 @@ export default {
         // 日期
         myScheduleEvent(item, index) {
             if (this.getCurrentDay == item) return
+            if(this.isLoadOnce) return
+            this.isLoadOnce = true;
             this.isShowLoad = true
             this.getCurrentDay = item.length == 1 ? '0' + item : item
             let search = this.getNowFormatDate(1)
@@ -198,7 +201,7 @@ export default {
                 if (startTime <= dS && dE <= endTime || isAllDay) { //全天
                     days[dayStr] = this.i18n.Date_ALLDay;
                 } else if (startTime > dS && dE > endTime) { //某天内
-                    days[dayStr] = this.format(new Date(startTime), 'hh:mm') + '-'
+                    days[dayStr] = this.format(new Date(startTime), 'hh:mm') + ' ~ '
                         + this.format(new Date(endTime), 'hh:mm');
                 } else if (startTime > dS && dE <= endTime) { //开始于
                     days[dayStr] = this.format(new Date(startTime), 'hh:mm');
@@ -220,7 +223,8 @@ export default {
                 scheduleArr = scheduleArr.concat(promiseTwo.data)
             }
             let scheduleArrItem = []
-            for (let index = 0; index < scheduleArr.length; index++) {
+            let dataLength = scheduleArr.length >= 2 ? 2 : scheduleArr.length
+            for (let index = 0; index < dataLength; index++) {
                 let scheduleObj = {}
                 let timeObj = this.cutPeriodToDay(scheduleArr[index].startTime, scheduleArr[index].endTime, scheduleArr[index].isAllDay);
                 scheduleObj['time'] = timeObj[searchTime]
@@ -229,13 +233,14 @@ export default {
                 scheduleObj['type'] = scheduleArr[index].status
                 scheduleArrItem.push(scheduleObj)
             }
-            this.scheduleItem = []
+            this.isLoadOnce = false;
             this.scheduleItem = scheduleArrItem
             this.AllSchedule = this.i18n.AllSchedule.replace(/%s/g, '' + scheduleArrItem.length + '')
         },
         error() {
             this.isShowLoad = false
             this.isError = false
+            this.isLoadOnce = false;
             this.broadcastWidgetHeight()
         },
         getNowFormatDate(type) {
@@ -360,10 +365,6 @@ export default {
     background-color: #fff;
 }
 
-.my-schedule {
-    background-color: #fff;
-}
-
 .my-schedule-title {
     height: 47wx;
     padding: 0 18wx;
@@ -395,19 +396,19 @@ export default {
 
 .my-schedule-content {
     /* margin-top: 5wx; */
-    height: 300wx;
-    padding: 12wx 13wx 5wx 13wx;
+    height: 134wx;
+    padding: 6wx 13wx 0 13wx;
     background-color: #fff;
 }
 
 .my-schedule-no-content {
-    height: 300wx;
+    height: 134wx;
     background-color: #fff;
 }
 
 .content-item {
-    height: 45wx;
-    margin: 5wx 0 2wx 0;
+    height: 64wx;
+    padding: 13wx 0 2wx 0;
 }
 
 .border-bottom {
@@ -419,10 +420,10 @@ export default {
 }
 
 .item-dot {
-    width: 5wx;
-    height: 5wx;
-    background: rgba(77, 164, 254, 1);
-    border-radius: 2.5wx;
+    width: 6wx;
+    height: 6wx;
+    background: #148ed6;
+    border-radius: 3wx;
     margin-right: 24px;
 }
 
