@@ -66,6 +66,7 @@ export default {
         this.$fixViewport();
         this.channel.onmessage = event => {
             if (event.data.action === 'RefreshData') {
+                this.isShowLoad = true;
                 linkapi.getLanguage(res => {
                     this.i18n = this.$window[res]
                     this.RefreshData()
@@ -162,8 +163,7 @@ export default {
                 })
             }, err => {
                 this.error()
-            }
-            )
+            })
         },
         format(ts, fmt) {
             if (!ts) return '';
