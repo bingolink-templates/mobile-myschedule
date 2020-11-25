@@ -28,7 +28,10 @@
                 </div>
             </div>
             <div class="my-schedule-no-content flex-ac flex-jc" v-if="scheduleItem.length==0">
-                <text class="f32 c0 fw4 pl15 center-height">{{isError?i18n.NoneData:i18n.ErrorLoadData}}</text>
+                <div class="flex-dr flex-ac">
+                    <bui-image src="/image/nodata.png" width="21wx" height="20wx"></bui-image>
+                    <text class="f32 c45 fw4 pl15 center-height">{{isError?i18n.NoneData:i18n.ErrorLoadData}}</text>
+                </div>
             </div>
         </div>
         <div class="my-schedule-no-content flex-ac flex-jc" v-if="isShowLoad">
@@ -88,7 +91,7 @@ export default {
         // 日期
         myScheduleEvent(item, index) {
             if (this.getCurrentDay == item) return
-            if(this.isLoadOnce) return
+            if (this.isLoadOnce) return
             this.isLoadOnce = true;
             this.isShowLoad = true
             this.getCurrentDay = item.length == 1 ? '0' + item : item
